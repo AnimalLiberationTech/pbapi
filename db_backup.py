@@ -2,7 +2,7 @@
 """Database backup script for PostgreSQL.
 
 Creates a backup of the PostgreSQL database before migrations are performed.
-Backups are stored in the `backups/` directory with timestamp and environment info.
+Backups are stored in the `db_backups/` directory with timestamp and environment info.
 """
 
 import os
@@ -11,40 +11,31 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from src.adapters.doppler import load_doppler_secrets
 
-def get_db_config(env: str) -> dict:
-    """Get database configuration from environment variables."""
-    env_upper = env.upper()
+
+
+def get_db_config() -> dict:
+    load_doppler_secrets()
+
     return {
-        "host": os.environ.get(f"{env_upper}_POSTGRES_HOST", "localhost"),
-        "port": os.environ.get(f"{env_upper}_POSTGRES_PORT", "5432"),
-        "database": os.environ.get(f"{env_upper}_POSTGRES_DB", "postgres"),
-        "user": os.environ.get(f"{env_upper}_POSTGRES_USER", "postgres"),
-        "password": os.environ.get(f"{env_upper}_POSTGRES_PASSWORD", "postgres"),
+        "host": os.environ.get("POSTGRES_HOST", "localhost"),
+        "port": os.environ.get("POSTGRES_PORT", "5432"),
+        "user": os.environ.get("POSTGRES_USER", "postgres"),
+        "password": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        "database": os.environ["POSTGRES_DB"],
     }
 
 
-def create_backup(env: str, backup_dir: str = "backups") -> str:
-    """Create a PostgreSQL database backup using pg_dump.
-
-    Args:
-        env: Environment name (dev, test, stage, prod)
-        backup_dir: Directory to store backups
-
-    Returns:
-        Path to the created backup file
-    """
-    config = get_db_config(env)
+def create_backup(backup_dir: str = "db_backups") -> str:
+    config = get_db_config()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Create backup directory if it doesn't exist
     backup_path = Path(backup_dir)
     backup_path.mkdir(parents=True, exist_ok=True)
 
-    # Generate backup filename
     backup_file = backup_path / f"{config['database']}_{timestamp}.sql"
 
-    # Set PGPASSWORD environment variable for pg_dump
     env_vars = os.environ.copy()
     env_vars["PGPASSWORD"] = config["password"]
 
@@ -63,7 +54,7 @@ def create_backup(env: str, backup_dir: str = "backups") -> str:
     print(f"Creating backup: {backup_file}")
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             cmd,
             env=env_vars,
             capture_output=True,
@@ -83,16 +74,9 @@ def create_backup(env: str, backup_dir: str = "backups") -> str:
         raise
 
 
-def restore_backup(backup_file: str, env: str) -> None:
-    """Restore a PostgreSQL database from a backup file.
+def restore_backup(backup_file: str) -> None:
+    config = get_db_config()
 
-    Args:
-        backup_file: Path to the backup file
-        env: Environment name (dev, test, stage, prod)
-    """
-    config = get_db_config(env)
-
-    # Set PGPASSWORD environment variable for psql
     env_vars = os.environ.copy()
     env_vars["PGPASSWORD"] = config["password"]
 
@@ -109,7 +93,7 @@ def restore_backup(backup_file: str, env: str) -> None:
     print(f"Restoring backup: {backup_file}")
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             cmd,
             env=env_vars,
             capture_output=True,
@@ -122,42 +106,23 @@ def restore_backup(backup_file: str, env: str) -> None:
         raise
 
 
-def list_backups(backup_dir: str = "backups", env: str = None) -> list:
-    """List available backups.
-
-    Args:
-        backup_dir: Directory containing backups
-        env: Optional environment filter
-
-    Returns:
-        List of backup files
-    """
+def list_backups(backup_dir: str = "db_backups") -> list:
     backup_path = Path(backup_dir)
     if not backup_path.exists():
         return []
 
-    backups = sorted(backup_path.glob("*.sql"), reverse=True)
-
-    if env:
-        backups = [b for b in backups if f"_{env}_" in b.name]
-
-    return [str(b) for b in backups]
+    return [str(bu) for bu in sorted(backup_path.glob("*.sql"), reverse=True)]
 
 
-def cleanup_old_backups(backup_dir: str = "backups", keep: int = 10, env: str = None):
+def cleanup_old_backups(backup_dir: str = "db_backups", keep: int = 20):
     """Remove old backups, keeping only the most recent ones.
-
-    Args:
-        backup_dir: Directory containing backups
-        keep: Number of backups to keep
-        env: Optional environment filter
     """
-    backups = list_backups(backup_dir, env)
+    backups_list = list_backups(backup_dir)
 
-    if len(backups) <= keep:
+    if len(backups_list) <= keep:
         return
 
-    to_remove = backups[keep:]
+    to_remove = backups_list[keep:]
     for backup_file in to_remove:
         print(f"Removing old backup: {backup_file}")
         Path(backup_file).unlink()
@@ -200,9 +165,11 @@ if __name__ == "__main__":
         if not args.file:
             print("--file is required for restore action", file=sys.stderr)
             sys.exit(1)
-        restore_backup(args.file, args.env)
+
+        restore_backup(args.file)
     elif args.action == "list":
-        backups = list_backups(env=args.env)
+        backups = list_backups()
+
         if backups:
             print(f"Available backups for {args.env}:")
             for b in backups:
@@ -210,5 +177,5 @@ if __name__ == "__main__":
         else:
             print(f"No backups found for {args.env}")
     elif args.action == "cleanup":
-        cleanup_old_backups(keep=args.keep, env=args.env)
+        cleanup_old_backups(keep=args.keep)
 

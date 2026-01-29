@@ -3,33 +3,12 @@ import os
 import subprocess
 import sys
 
-from src.adapters.db.cosmos_db_core import CosmosDBCoreAdapter
-from src.helpers.logging import set_logger
-from src.schemas.common import EnvType, TableName, TablePartitionKey
-
 from db_backup import create_backup, cleanup_old_backups
-
-
-def migrate_cosmos_db(env: EnvType, logger):
-    """Migrate CosmosDB database and tables."""
-    session = CosmosDBCoreAdapter(env, logger)
-    session.create_db()
-    tables = {
-        TableName.RECEIPT: TablePartitionKey.RECEIPT,
-        TableName.RECEIPT_URL: TablePartitionKey.RECEIPT_URL,
-        TableName.SHOP: TablePartitionKey.SHOP,
-        TableName.SHOP_ITEM: TablePartitionKey.SHOP_ITEM,
-        TableName.USER: TablePartitionKey.USER,
-        TableName.USER_IDENTITY: TablePartitionKey.USER_IDENTITY,
-        TableName.USER_SESSION: TablePartitionKey.USER_SESSION,
-    }
-    for table, partition_key in tables.items():
-        session.create_table(table, partition_key=partition_key)
-    logger.info("CosmosDB migration completed successfully.")
+from src.schemas.common import EnvType
 
 
 def run_alembic_command(command: list, env: str) -> int:
-    """Run an Alembic command with proper environment setup.
+    """Run an Alembic command with a proper environment setup.
 
     Args:
         command: Alembic command and arguments
@@ -56,8 +35,8 @@ def migrate_postgres_up(env: str, revision: str = "head", backup: bool = True):
     if backup:
         print("Creating backup before migration...")
         try:
-            create_backup(env)
-            cleanup_old_backups(keep=10, env=env)
+            create_backup()
+            cleanup_old_backups(keep=10)
         except Exception as e:
             print(f"Warning: Backup failed: {e}")
             response = input("Continue without backup? (y/N): ")
@@ -84,10 +63,10 @@ def migrate_postgres_down(env: str, revision: str = "-1", backup: bool = True):
         backup: Whether to create a backup before migrating
     """
     if backup:
-        print(f"Creating backup before downgrade...")
+        print("Creating backup before downgrade...")
         try:
-            create_backup(env)
-            cleanup_old_backups(keep=10, env=env)
+            create_backup()
+            cleanup_old_backups(keep=10)
         except Exception as e:
             print(f"Warning: Backup failed: {e}")
             response = input("Continue without backup? (y/N): ")
@@ -111,7 +90,7 @@ def show_postgres_history(env: str):
 
 
 def show_postgres_current(env: str):
-    """Show current migration revision."""
+    """Show the current migration revision."""
     run_alembic_command(["current", "--verbose"], env)
 
 
@@ -133,7 +112,7 @@ def migrate_db():
     parser.add_argument(
         "--db",
         type=str,
-        choices=["cosmos", "postgres"],
+        choices=["postgres"],
         default="postgres",
         help="Database type to migrate (default: postgres)",
     )
@@ -161,12 +140,6 @@ def migrate_db():
         action="store_true",
         help="Skip backup before migration",
     )
-    parser.add_argument(
-        "--appinsights",
-        type=str,
-        help="Azure application insights connection string (required for cosmos)",
-    )
-
     args = parser.parse_args()
 
     try:
@@ -178,14 +151,7 @@ def migrate_db():
 
     os.environ["ENV_NAME"] = args.env.lower()
 
-    if args.db == "cosmos":
-        if not args.appinsights:
-            raise ValueError("--appinsights is required for CosmosDB migrations")
-        os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"] = args.appinsights
-        logger = set_logger()
-        migrate_cosmos_db(env, logger)
-
-    elif args.db == "postgres":
+    if args.db == "postgres":
         backup = not args.no_backup
 
         if args.action == "up":

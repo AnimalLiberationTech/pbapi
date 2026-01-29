@@ -5,6 +5,7 @@ Revises: 000_legacy_schema
 Create Date: 2026-01-03
 
 """
+
 import os
 from typing import Sequence, Union
 

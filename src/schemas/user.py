@@ -66,7 +66,7 @@ class GenderCode(IntEnum):
 
 class User(SchemaBase):
     id: Optional[UUID] = Field(default_factory=uuid4)
-    email: EmailStr
+    email: EmailStr | None = None
     name: str
     creation_time: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
     login_generation: int = 1

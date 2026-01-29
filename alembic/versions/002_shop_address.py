@@ -4,6 +4,7 @@ Revision ID: 002_shop_address
 Revises: 001_initial_schema
 Create Date: 2026-01-05
 """
+
 import os
 from typing import Sequence, Union
 
@@ -24,7 +25,7 @@ def upgrade() -> None:
     op.execute("ALTER TABLE shop ADD COLUMN IF NOT EXISTS company_id TEXT DEFAULT NULL")
     op.execute("ALTER TABLE shop ADD COLUMN IF NOT EXISTS country_code country_code")
 
+
 def downgrade() -> None:
     """Remove address column from shop table."""
     op.execute("ALTER TABLE shop DROP COLUMN IF EXISTS address")
-

@@ -61,28 +61,18 @@ class UserIdentityHandler:
         return self.db.update_one(identity_id, data)
 
     def get_or_create_user_by_identity(
-        self, _id: str, provider: str, email: EmailStr, name: str
+        self, _id: str, provider: str, email: Optional[EmailStr], name: str
     ) -> User:
-        """
-        Get or create a user by their identity.
-        """
         identity = self.find(_id, provider)
 
         if identity:
             self.logger.info(f"Found existing identity for user: {identity.user_id}")
-            self.db.use_table(TableName.USER)
-            user_data = self.db.read_one(str(identity.user_id))
-            if user_data:
-                return User(**user_data)
-            else:
-                self.logger.error(
-                    f"User {identity.user_id} not found for identity {_id}"
-                )
-                # This should not happen if DB integrity is maintained
-                raise ValueError(f"User {identity.user_id} not found")
 
-        # Identity not found, create user and then identity
-        self.logger.info(f"Identity not found. Creating new user for {email}")
+            self.db.use_table(TableName.USER)
+            return User(**self.db.read_one(str(identity.user_id)))
+
+        self.logger.info(f"Identity not found. Creating new user for {provider} id {_id}")
+
         self.db.use_table(TableName.USER)
         new_user = User(email=email, name=name)
         user_id = self.db.create_one(new_user.model_dump(mode="json"))

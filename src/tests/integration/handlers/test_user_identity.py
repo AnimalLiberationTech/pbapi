@@ -108,3 +108,17 @@ class TestUserIdentity(unittest.TestCase):
         found_identity = self.handler.find(new_identity_id, IdentityProvider.GOOGLE)
         self.assertIsNotNone(found_identity)
         self.assertEqual(str(found_identity.user_id), str(new_user.id))
+
+    def test_get_or_create_user_by_identity_no_email(self):
+        new_identity_id = f"no-email-id-{uuid.uuid4()}"
+
+        new_user = self.handler.get_or_create_user_by_identity(
+            new_identity_id, IdentityProvider.TELEGRAM, None, "Telegram User"
+        )
+        self.assertIsNone(new_user.email)
+        self.assertEqual(new_user.name, "Telegram User")
+
+        # Verify it was actually created in DB
+        found_identity = self.handler.find(new_identity_id, IdentityProvider.TELEGRAM)
+        self.assertIsNotNone(found_identity)
+        self.assertEqual(str(found_identity.user_id), str(new_user.id))

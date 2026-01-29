@@ -110,12 +110,11 @@ uv run python db_backup.py cleanup --env $ENV_NAME --keep 10
 
 ### Migration Options
 - `--env`: Required. One of `prod`, `stage`, `dev`, `test`, `local`
-- `--db`: Database type. Either `cosmos` or `postgres` (default: `postgres`)
+- `--db`: Database type. `postgres` (default: `postgres`)
 - `--action`: Migration action. One of `up`, `down`, `history`, `current`, `create` (default: `up`)
 - `--revision`: Target revision for up/down (default: `head` for up, `-1` for down)
 - `--message`, `-m`: Migration message (required for `create` action)
 - `--no-backup`: Skip backup before migration
-- `--appinsights`: Azure Application Insights connection string (required for CosmosDB)
 
 ## Testing
 

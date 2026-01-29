@@ -7,6 +7,7 @@ Create Date: 2026-01-03
 This migration represents the existing Plante database schema.
 It was extracted from a pg_dump backup of the dev database.
 """
+
 import os
 from typing import Sequence, Union
 
@@ -40,4 +41,3 @@ def downgrade() -> None:
     with open(sql_file, "r", encoding="utf-8") as f:
         sql = f.read()
     op.execute(sql)
-

@@ -131,8 +131,10 @@ dmypy.json
 
 # docker
 .docker/
+.appwrite/
 
 # keys
 .pem
 
 /db
+/db_backups

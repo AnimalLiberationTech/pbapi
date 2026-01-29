@@ -6,6 +6,8 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+from src.adapters.doppler import load_doppler_secrets
+
 # this is the Alembic Config object
 config = context.config
 
@@ -15,14 +17,13 @@ if config.config_file_name is not None:
 
 
 def get_url():
-    """Build database URL from environment variables."""
-    env = os.environ.get("ENV_NAME", "local").upper()
-    host = os.environ.get(f"{env}_POSTGRES_HOST") or "localhost"
-    port = os.environ.get(f"{env}_POSTGRES_PORT") or "5432"
-    database = os.environ.get(f"{env}_POSTGRES_DB") or "postgres"
-    user = os.environ.get(f"{env}_POSTGRES_USER") or "postgres"
-    password = os.environ.get(f"{env}_POSTGRES_PASSWORD") or "postgres"
-    return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+    load_doppler_secrets()
+
+    host = os.environ.get("POSTGRES_HOST", "localhost")
+    port = os.environ.get("POSTGRES_PORT", "5432")
+    user = os.environ.get("POSTGRES_USER", "postgres")
+    password = os.environ.get("POSTGRES_PASSWORD", "postgres")
+    return f"postgresql://{user}:{password}@{host}:{port}/{os.environ['POSTGRES_DB']}"
 
 
 def run_migrations_offline() -> None:
@@ -69,4 +70,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

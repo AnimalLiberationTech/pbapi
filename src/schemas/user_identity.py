@@ -8,6 +8,8 @@ from src.schemas.schema_base import SchemaBase
 class IdentityProvider(StrEnum):
     GOOGLE = "google"
     TELEGRAM = "telegram"
+    APPWRITE = "appwrite"
+    SUPABASE = "supabase"
 
     @classmethod
     def get(cls, value):

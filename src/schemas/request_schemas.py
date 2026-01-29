@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -23,5 +24,5 @@ class AddBarcodesRequest(BaseModel):
 class GetOrCreateUserByIdentityRequest(BaseModel):
     id: str
     provider: IdentityProvider
-    email: EmailStr
+    email: Optional[EmailStr] = None
     name: str

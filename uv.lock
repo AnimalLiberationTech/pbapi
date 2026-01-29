@@ -548,7 +548,7 @@ dependencies = [
     { name = "sqlalchemy" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "black" },
     { name = "coverage" },
@@ -556,12 +556,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "testcontainers" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "pylint" },
     { name = "uvicorn" },
 ]
 
@@ -569,25 +563,22 @@ dev = [
 requires-dist = [
     { name = "alembic" },
     { name = "appwrite" },
-    { name = "black", marker = "extra == 'dev'" },
-    { name = "coverage", marker = "extra == 'dev'" },
     { name = "doppler-sdk" },
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.11" },
     { name = "pydantic", extras = ["email"] },
-    { name = "pylint", marker = "extra == 'dev'" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "python-dotenv" },
     { name = "sqlalchemy" },
-    { name = "testcontainers", extras = ["postgres"], marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "black", specifier = ">=26.1.0" },
+    { name = "coverage" },
     { name = "pylint", specifier = ">=4.0.4" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "testcontainers", extras = ["postgres"] },
     { name = "uvicorn", specifier = ">=0.40.0" },
 ]
 

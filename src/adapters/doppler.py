@@ -17,17 +17,13 @@ def load_doppler_secrets():
     if not token:
         raise EnvironmentError(f"{c.DOPPLER_TOKEN_NAME} is not set")
 
-    project = os.environ.get(c.DOPPLER_PROJECT_NAME)
-    if not project:
-        raise EnvironmentError("DOPPLER_PROJECT_NAME is not set")
-
     config = os.environ.get("DOPPLER_ENVIRONMENT", os.environ.get("ENV_NAME"))
     if not config:
         raise EnvironmentError("DOPPLER_ENVIRONMENT is not set")
 
     sdk = DopplerSDK()
     sdk.set_access_token(token)
-    response = sdk.secrets.list(project=project, config=config)
+    response = sdk.secrets.list(project=c.DOPPLER_PROJECT_NAME, config=config)
     if response and response.secrets:
         for key, value in response.secrets.items():
             if key in os.environ:

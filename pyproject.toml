@@ -14,19 +14,33 @@ dependencies = [
     "fastapi>=0.128.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "black",
-    "coverage",
-    "pylint",
-    "pytest",
-    "pytest-cov",
-    "testcontainers[postgres]",
-]
-
 [dependency-groups]
 dev = [
     "black>=26.1.0",
     "pylint>=4.0.4",
     "uvicorn>=0.40.0",
+    "coverage",
+    "pytest",
+    "pytest-cov",
+    "testcontainers[postgres]",
 ]
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-module-docstring",    # C0114
+    "missing-class-docstring",     # C0115
+    "missing-function-docstring",  # C0116,
+    "too-few-public-methods",
+]
+
+[tool.pylint.format]
+max-line-length = 90
+
+[tool.pylint.basic]
+good-names = ["e", "logger", "id"]
+const-rgx = "(([A-Z_][A-Z0-9_]*)|(__.*__)|([A-Z][a-z0-9]+Router))$"
+# allow alembic migration files to start with numbers
+module-rgx = "^(([a-z_][a-z0-9_]*)|([0-9][a-z0-9_]*))$"
+
+[tool.pylint.similarities]
+ignore-imports = true

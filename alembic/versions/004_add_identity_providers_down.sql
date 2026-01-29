@@ -1,0 +1,2 @@
+-- Removing values from an enum is not supported in PostgreSQL.
+-- To revert, one would need to drop and recreate the type and all columns using it.

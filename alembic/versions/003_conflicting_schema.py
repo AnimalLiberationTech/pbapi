@@ -12,6 +12,7 @@ The new tables use prefixed names to avoid conflicts:
 - rp_user_identity
 - rp_user_session
 """
+
 import os
 from typing import Sequence, Union
 
@@ -45,4 +46,3 @@ def downgrade() -> None:
     with open(sql_file, "r", encoding="utf-8") as f:
         sql = f.read()
     op.execute(sql)
-
