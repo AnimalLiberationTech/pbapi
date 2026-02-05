@@ -12,7 +12,8 @@ from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRoute
 load_dotenv()
 
 sentry_sdk.init(
-    send_default_pii=True,
+    # Disable automatic PII collection; can be conditionally enabled elsewhere if consent is obtained
+    send_default_pii=False,
     traces_sample_rate=1.0,  # 1.0 to capture 100% of transactions
     enable_logs=True,
     environment=os.environ.get("ENV_NAME", "dev"),
