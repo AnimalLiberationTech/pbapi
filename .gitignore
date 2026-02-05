@@ -138,3 +138,5 @@ dmypy.json
 
 /db
 /db_backups
+
+requirements.txt

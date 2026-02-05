@@ -1,19 +1,23 @@
+import logging
 import os
-import sys
 
+import sentry_sdk
 from dotenv import load_dotenv
-
-load_dotenv()
-
-sys.path.insert(0, os.path.dirname(__file__))
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import logging
+from starlette.responses import Response
 
 from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRouter
 
-# Configure logging
+load_dotenv()
+
+sentry_sdk.init(
+    send_default_pii=True,
+    traces_sample_rate=1.0,  # 1.0 to capture 100% of transactions
+    enable_logs=True,
+    environment=os.environ.get("ENV_NAME", "dev"),
+)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -35,3 +39,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_openapi():
+    return app.openapi()
