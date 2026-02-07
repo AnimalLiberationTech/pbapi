@@ -11,10 +11,11 @@ if base_dir not in sys.path:
 
 
 from src.adapters.doppler import load_doppler_secrets
-from src.adapters.rest.fastapi_app import app
-from src.adapters.rest.appwrite_fastapi_adapter import run_fastapi_on_appwrite
 
 load_doppler_secrets()
+
+from src.adapters.rest.fastapi_app import app
+from src.adapters.rest.appwrite_fastapi_adapter import run_fastapi_on_appwrite
 
 
 async def main(context):
