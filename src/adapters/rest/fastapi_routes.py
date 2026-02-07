@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
 from src.handlers.user_identity import UserIdentityHandler
-from src.helpers.common import get_logger
+from src.helpers.log import get_logger
 from src.schemas.request_schemas import (
     GetOrCreateUserByIdentityRequest,
 )
@@ -34,13 +34,13 @@ async def home(request: Request, logger=Depends(get_logger)):
 
 
 @HealthRouter.get("", response_model=Health)
-async def health(request: Request, logger=Depends(get_logger)):
+async def health(logger=Depends(get_logger)):
     logger.info("Health endpoint called")
     return Health()
 
 
 @HealthRouter.get("/deep-ping", response_model=Health)
-async def deep_ping(request: Request, logger=Depends(get_logger)):
+async def deep_ping(logger=Depends(get_logger)):
     logger.info("Deep ping endpoint called")
     time.sleep(1)
     return Health()

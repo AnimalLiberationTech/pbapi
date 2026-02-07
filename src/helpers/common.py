@@ -1,10 +1,8 @@
 import hashlib
-import logging
 import os
 from itertools import groupby
 
 import requests
-from starlette.requests import Request
 
 
 def get_templates_dir() -> str:
@@ -99,26 +97,3 @@ def is_localhost() -> bool:
 
 def make_hash(url: str) -> str:
     return hashlib.md5(url.strip().encode("utf-8")).hexdigest()
-
-
-class AppwriteLogger:
-    def __init__(self, context):
-        self.context = context
-
-    def info(self, msg, *args):
-        self.context.log(str(msg) % args if args else str(msg))
-
-    def warning(self, msg, *args):
-        self.context.log(f"WARNING: {str(msg) % args if args else str(msg)}")
-
-    def error(self, msg, *args):
-        self.context.error(str(msg) % args if args else str(msg))
-
-    def debug(self, msg, *args):
-        self.context.log(f"DEBUG: {str(msg) % args if args else str(msg)}")
-
-
-def get_logger(request: Request):
-    if "appwrite_context" in request.scope:
-        return AppwriteLogger(request.scope["appwrite_context"])
-    return logging.getLogger("fastapi")
