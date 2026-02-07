@@ -1,38 +1,22 @@
 import logging
-import os
 
-import sentry_sdk
-from dotenv import load_dotenv
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
+from starlette.requests import Request
 from starlette.responses import Response
 
-from src.helpers.log import get_logger
+from src.adapters.logger.appwrite import AppwriteLogger
+from src.adapters.logger.default import DefaultLogger
 from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRouter
 
-load_dotenv()
 
-sentry_sdk.init(
-    # Disable automatic PII collections;
-    # can be conditionally enabled elsewhere if consent is obtained
-    send_default_pii=False,
-    traces_sample_rate=1.0,
-    enable_logs=True,
-    environment=os.environ.get("ENV_NAME", "dev"),
-    dsn=os.environ.get("SENTRY_DSN"),
-    integrations=[
-        StarletteIntegration(),
-        FastApiIntegration(),
-        LoggingIntegration(
-            level=logging.WARNING,  # Capture warning and above as breadcrumbs
-            event_level=logging.WARNING  # Send warnings and errors as events
-        )
-    ]
+def get_logger(request: Request) -> logging.Logger:
+    if "appwrite_context" in request.scope:
+        context = request.scope["appwrite_context"]
+        return AppwriteLogger(context, level=logging.INFO).log
 
-)
+    return DefaultLogger(level=logging.DEBUG).log
+
 
 app = FastAPI(
     title="Plant-Based API",
@@ -62,10 +46,3 @@ async def favicon():
 @app.get("/openapi.json", include_in_schema=False)
 async def get_openapi():
     return app.openapi()
-
-
-@app.get("/sentry-debug")
-async def trigger_error(logger=Depends(get_logger)):
-    logger.info('This will NOT be sent to Sentry at all')
-    logger.warning('User login failed - This will be sent to Sentry as an event')
-    logger.error('Critical error - This will be sent to Sentry as an event')
