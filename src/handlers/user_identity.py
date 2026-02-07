@@ -71,7 +71,9 @@ class UserIdentityHandler:
             self.db.use_table(TableName.USER)
             return User(**self.db.read_one(str(identity.user_id)))
 
-        self.logger.info(f"Identity not found. Creating new user for {provider} id {_id}")
+        self.logger.info(
+            f"Identity not found. Creating new user for {provider} id {_id}"
+        )
 
         self.db.use_table(TableName.USER)
         new_user = User(email=email, name=name)

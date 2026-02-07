@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv",
     "psycopg2-binary>=2.9.11",
     "fastapi>=0.128.0",
+    "sentry-sdk>=2.52.0",
 ]
 
 [dependency-groups]
