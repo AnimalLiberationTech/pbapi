@@ -7,7 +7,7 @@ A FastAPI-based backend for the Plant-Based project, providing search and vendor
 - **Search API**: Endpoints for searching plant-based products.
 - **Vendor Management**: CRUD operations for vendors (in progress).
 - **Health Checks**: Basic and deep health monitoring.
-- **Infrastructure**: AWS CDK for deployment.
+- **Infrastructure**: Appwrite Functions.
 
 ## Project Structure
 
@@ -38,6 +38,41 @@ A FastAPI-based backend for the Plant-Based project, providing search and vendor
 
 The API will be available at `http://127.0.0.1:8000`.
 Interactive API documentation (Swagger UI) is available at `http://127.0.0.1:8000/docs`.
+
+## Logging
+
+The project uses a structured logging system with different adapters based on the execution environment.
+
+### Logger Adapters
+
+- **DefaultLogger**: Used during local development. Outputs to the console.
+- **AppwriteLogger**: Used when running as an Appwrite Function. Forwards logs to the Appwrite console (`context.log` and `context.error`).
+- **SentryLogger**: Integrates with Sentry for error tracking and performance monitoring.
+
+### Configuration
+
+Logging is configured via environment variables:
+
+- `LOG_LEVEL`: Sets the minimum log level for the application (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`). Defaults to `INFO`.
+- `SENTRY_DSN`: The Data Source Name for Sentry integration. If provided, `SentryLogger` will initialize Sentry.
+
+Note: By default, Sentry is configured to capture only `WARNING` and `ERROR` logs as events, even if `LOG_LEVEL` is set to `INFO` or `DEBUG`.
+
+### Usage
+
+To use the logger in a FastAPI route, use the `get_logger` dependency:
+
+```python
+from fastapi import Depends
+from src.helpers.log import get_logger
+
+@app.get("/example")
+async def example_route(logger=Depends(get_logger)):
+    logger.info("This is an info message")
+    logger.error("This is an error message")
+```
+
+The `get_logger` utility automatically detects if it's running in an Appwrite environment and attaches the appropriate handlers.
 
 ## Database Migrations
 
@@ -125,4 +160,34 @@ pytest
 
 ## Deployment
 
-The project uses AWS CDK for deployment. Refer to the `cdk/` directory for infrastructure-related code.
+The project is deployed as an Appwrite Function.
+
+### Deploy via Appwrite CLI
+
+1.  **Install Appwrite CLI**:
+    ```bash
+    curl -sL https://appwrite.io/cli/install.sh | bash
+    ```
+
+2.  **Login to Appwrite**:
+    ```bash
+    appwrite login
+    ```
+
+3.  **Configure Client**:
+    Ensure `appwrite.json` has the correct `projectId` and `endpoint`.
+
+4.  **Deploy**:
+    ```bash
+    appwrite push functions
+    ```
+
+### Deploy via GitHub Actions
+
+The project includes a GitHub Actions workflow in `.github/workflows/deploy-appwrite.yml` that automatically deploys the function to Appwrite on pushes to the `main` branch.
+
+To enable this, you need to configure the following secrets in your GitHub repository:
+
+- `APPWRITE_ENDPOINT`: Your Appwrite API endpoint (e.g., `https://cloud.appwrite.io/v1`).
+- `APPWRITE_PROJECT_ID`: Your Appwrite Project ID.
+- `APPWRITE_API_KEY`: An Appwrite API key with sufficient permissions to deploy functions.
