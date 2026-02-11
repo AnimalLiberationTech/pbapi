@@ -2,6 +2,7 @@
 
 import os
 from logging.config import fileConfig
+from urllib.parse import quote_plus
 
 from sqlalchemy import engine_from_config, pool
 from alembic import context
@@ -23,7 +24,14 @@ def get_url():
     port = os.environ.get("POSTGRES_PORT", "5432")
     user = os.environ.get("POSTGRES_USER", "postgres")
     password = os.environ.get("POSTGRES_PASSWORD", "postgres")
-    return f"postgresql://{user}:{password}@{host}:{port}/{os.environ['POSTGRES_DB']}"
+    database = os.environ["POSTGRES_DB"]
+
+    # Escape credentials for CLI/URL usage
+    user_enc = quote_plus(user)
+    password_enc = quote_plus(password)
+    database_enc = quote_plus(database)
+
+    return f"postgresql://{user_enc}:{password_enc}@{host}:{port}/{database_enc}"
 
 
 def run_migrations_offline() -> None:
