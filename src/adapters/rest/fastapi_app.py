@@ -1,22 +1,8 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.requests import Request
 from starlette.responses import Response
 
-from src.adapters.logger.appwrite import AppwriteLogger
-from src.adapters.logger.default import DefaultLogger
 from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRouter
-
-
-def get_logger(request: Request) -> logging.Logger:
-    if "appwrite_context" in request.scope:
-        context = request.scope["appwrite_context"]
-        return AppwriteLogger(context, level=logging.INFO).log
-
-    return DefaultLogger(level=logging.DEBUG).log
-
 
 app = FastAPI(
     title="Plant-Based API",
