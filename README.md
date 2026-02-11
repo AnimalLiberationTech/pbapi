@@ -58,22 +58,6 @@ Logging is configured via environment variables:
 
 Note: By default, Sentry is configured to capture only `WARNING` and `ERROR` logs as events, even if `LOG_LEVEL` is set to `INFO` or `DEBUG`.
 
-### Usage
-
-To use the logger in a FastAPI route, use the `get_logger` dependency:
-
-```python
-from fastapi import Depends
-from src.helpers.log import get_logger
-
-@app.get("/example")
-async def example_route(logger=Depends(get_logger)):
-    logger.info("This is an info message")
-    logger.error("This is an error message")
-```
-
-The `get_logger` utility automatically detects if it's running in an Appwrite environment and attaches the appropriate handlers.
-
 ## Database Migrations
 
 PostgreSQL migrations use [Alembic](https://alembic.sqlalchemy.org/) for version control, allowing you to upgrade and downgrade database schema versions. A backup is automatically created before each migration.
@@ -162,25 +146,12 @@ pytest
 
 The project is deployed as an Appwrite Function.
 
-### Deploy via Appwrite CLI
+### Custom Domain Setup
 
-1.  **Install Appwrite CLI**:
-    ```bash
-    curl -sL https://appwrite.io/cli/install.sh | bash
-    ```
-
-2.  **Login to Appwrite**:
-    ```bash
-    appwrite login
-    ```
-
-3.  **Configure Client**:
-    Ensure `appwrite.json` has the correct `projectId` and `endpoint`.
-
-4.  **Deploy**:
-    ```bash
-    appwrite push functions
-    ```
+To create a custom domain for the function, run:
+```bash
+appwrite proxy create-function-rule --domain pbapi.fra.appwrite.run --function-id pbapi
+```
 
 ### Deploy via GitHub Actions
 
