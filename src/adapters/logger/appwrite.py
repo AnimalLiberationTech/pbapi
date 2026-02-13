@@ -1,6 +1,6 @@
 import logging
 
-from starlette.requests import Request
+from src.adapters.logger.default import DefaultLogger
 
 
 class AppwriteHandler(logging.Handler):
@@ -19,17 +19,15 @@ class AppwriteHandler(logging.Handler):
             self.handleError(record)
 
 
-def get_logger(request: Request, level: int = logging.INFO) -> logging.Logger:
-    logger = logging.getLogger("pbapi")
+class AppwriteLogger(DefaultLogger):
+    def __init__(self, context, level: int = logging.INFO):
+        super().__init__(level)
+        self.context = context
 
-    if "appwrite_context" in request.scope:
-        context = request.scope["appwrite_context"]
         # Check if AppwriteHandler is already attached to avoid duplicates
-        if not any(isinstance(h, AppwriteHandler) for h in logger.handlers):
+        if not any(isinstance(h, AppwriteHandler) for h in self.log.handlers):
             handler = AppwriteHandler(context)
             handler.setLevel(level)
             formatter = logging.Formatter("%(levelname)s: %(message)s")
             handler.setFormatter(formatter)
-            logger.addHandler(handler)
-
-    return logger
+            self.log.addHandler(handler)

@@ -28,7 +28,8 @@ TABLE_COLUMNS = {
         "receipt_id",
         "name",
         "quantity",
-        "quantity_unit",
+        "unit",
+        "unit_quantity",
         "price",
         "item_id",
     ],
@@ -260,6 +261,38 @@ class PostgreSQLAdapter(BaseDBAdapter):
 
         with self.connection.cursor() as cursor:
             query = f'UPDATE "{self.current_table}" SET {", ".join(set_parts)} WHERE id = %s'
+            cursor.execute(query, values)
+            return cursor.rowcount > 0
+
+    def update_one_by(self, where: Dict[str, Any], data: Dict[str, Any]) -> bool:
+        """
+        Updates a single record in the database based on a filter.
+
+        Args:
+            where: A dictionary of conditions (e.g., {'id': 1}).
+            data: A dictionary of columns to update (e.g., {'status': 'active'}).
+
+        Returns:
+            True if a row was updated, False otherwise.
+        """
+        if not self.current_table:
+            raise ValueError("Table not selected. Use use_table() first.")
+        if not where:
+            raise ValueError("The 'where' parameter cannot be empty.")
+        if not data:
+            return True
+
+        where_clauses = [f"{key} = %s" for key in where.keys()]
+        where_query = " AND ".join(where_clauses)
+
+        set_clauses = [f"{key} = %s" for key in data.keys()]
+        set_query = ", ".join(set_clauses)
+
+        query = f"UPDATE {self.current_table} SET {set_query} WHERE {where_query}"
+
+        values = list(data.values()) + list(where.values())
+
+        with self.connection.cursor() as cursor:
             cursor.execute(query, values)
             return cursor.rowcount > 0
 
