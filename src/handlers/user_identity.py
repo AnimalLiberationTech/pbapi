@@ -14,33 +14,21 @@ class UserIdentityHandler:
         self.logger = logger
         self.db: PostgreSQLAdapter = init_db_session(self.logger)
 
-    def find(self, identity_id: str, provider: str) -> Optional[UserIdentity]:
+    def find(self, _id: str, provider: str) -> Optional[UserIdentity]:
         """
         Find a UserIdentity by its id and provider.
         """
-        self.logger.info(
-            f"Finding user identity: {identity_id} for provider: {provider}"
-        )
+        self.logger.info(f"Finding user identity: {_id} for provider: {provider}")
 
         self.db.use_table(TableName.USER_IDENTITY)
-        data = self.db.read_one(identity_id)
+        data = self.db.read_many({'id': _id, 'provider': provider}, limit=1)
 
         if not data:
             return None
 
-        # Verify provider if specified
-        if data.get("provider") != provider:
-            self.logger.warning(
-                f"Found identity {identity_id} but provider mismatch: {data.get('provider')} != {provider}"
-            )
-            return None
-
-        return UserIdentity(**data)
+        return UserIdentity(**data[0])
 
     def create(self, identity: UserIdentity) -> str:
-        """
-        Create a new UserIdentity.
-        """
         self.logger.info(
             f"Creating user identity: {identity.id} for provider: {identity.provider}"
         )
@@ -50,15 +38,13 @@ class UserIdentityHandler:
         return self.db.create_one(data)
 
     def update(self, identity: UserIdentity) -> bool:
-        """
-        Update an existing UserIdentity.
-        """
-        self.logger.info(f"Updating user identity: {identity.id}")
+        self.logger.info(f"Updating user identity: {identity.id} for provider: {identity.provider}")
 
         self.db.use_table(TableName.USER_IDENTITY)
         data = identity.model_dump(mode="json")
-        identity_id = data.pop("id")
-        return self.db.update_one(identity_id, data)
+        _id = data.pop("id")
+        provider = data.pop("provider")
+        return self.db.update_one_by({'id': _id, 'provider': provider}, data)
 
     def get_or_create_user_by_identity(
         self, _id: str, provider: str, email: Optional[EmailStr], name: str
