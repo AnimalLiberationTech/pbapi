@@ -112,7 +112,10 @@ class TestSfsMdReceiptHandlerGetOrCreate:
     def test_get_or_create_with_purchases(self, handler, sample_receipt):
         shop_uuid = UUID("12345678-1234-5678-1234-567812345678")
         item_uuid = UUID("87654321-4321-8765-4321-876543210987")
-        purchase = Mock(name="Test Item", item_id=None, status=None)
+        purchase = Mock()
+        purchase.name = "Test Item"
+        purchase.item_id = None
+        purchase.status = None
         sample_receipt.purchases = [purchase]
         
         handler.db.read_many = Mock(
@@ -130,7 +133,9 @@ class TestSfsMdReceiptHandlerGetOrCreate:
         assert result.purchases[0].status == ItemBarcodeStatus.PENDING
 
     def test_get_or_create_with_purchase_no_match(self, handler, sample_receipt):
-        purchase = Mock(name="Nonexistent Item", item_id=None)
+        purchase = Mock()
+        purchase.name = "Nonexistent Item"
+        purchase.item_id = None
         sample_receipt.purchases = [purchase]
         
         handler.db.read_many = Mock(return_value=[])
@@ -144,7 +149,9 @@ class TestSfsMdReceiptHandlerGetOrCreate:
     def test_get_or_create_purchase_status_defaults_to_pending(self, handler, sample_receipt):
         shop_uuid = UUID("12345678-1234-5678-1234-567812345678")
         item_uuid = UUID("87654321-4321-8765-4321-876543210987")
-        purchase = Mock(name="Test Item", item_id=None)
+        purchase = Mock()
+        purchase.name = "Test Item"
+        purchase.item_id = None
         sample_receipt.purchases = [purchase]
         
         handler.db.read_many = Mock(
