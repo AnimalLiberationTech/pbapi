@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
-from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRouter
+from src.adapters.rest.fastapi_routes import (
+    HealthRouter,
+    UserRouter,
+    HomeRouter,
+    ReceiptRouter,
+)
 
 app = FastAPI(
     title="Plant-Based API",
@@ -13,6 +18,7 @@ app = FastAPI(
 app.include_router(HealthRouter)
 app.include_router(UserRouter)
 app.include_router(HomeRouter)
+app.include_router(ReceiptRouter)
 
 # Enable CORS for dashboard
 app.add_middleware(

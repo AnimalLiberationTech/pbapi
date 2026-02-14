@@ -37,7 +37,20 @@ A FastAPI-based backend for the Plant-Based project, providing search and vendor
    ```
 
 The API will be available at `http://127.0.0.1:8000`.
-Interactive API documentation (Swagger UI) is available at `http://127.0.0.1:8000/docs`.
+
+### API Documentation
+
+FastAPI automatically generates interactive API documentation. You can access these endpoints in your browser:
+
+- **Swagger UI (OpenAPI 3.0)**: `http://127.0.0.1:8000/docs` - Interactive API documentation with the ability to test endpoints directly.
+- **ReDoc**: `http://127.0.0.1:8000/redoc` - Alternative API documentation view.
+- **OpenAPI JSON Schema**: `http://127.0.0.1:8000/openapi.json` - Raw OpenAPI specification in JSON format.
+
+The `/docs` endpoint provides a user-friendly interface to:
+- Browse all available endpoints
+- View request/response schemas
+- Test API endpoints with custom parameters
+- See detailed descriptions and parameter requirements
 
 ## Logging
 
