@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
-from src.adapters.rest.fastapi_routes import HealthRouter, UserRouter, HomeRouter, ReceiptRouter
+from src.adapters.rest.fastapi_routes import (
+    HealthRouter,
+    UserRouter,
+    HomeRouter,
+    ReceiptRouter,
+)
 
 app = FastAPI(
     title="Plant-Based API",

@@ -88,7 +88,9 @@ class TestSfsMdReceiptHandlerGetOrCreate:
         shop_uuid = UUID("12345678-1234-5678-1234-567812345678")
         shop_data = [{"id": str(shop_uuid), "name": "Test Shop"}]
         # Need side_effect for shop lookup AND purchase item lookup
-        handler.db.read_many = Mock(side_effect=[shop_data, []])  # [] for no matching item
+        handler.db.read_many = Mock(
+            side_effect=[shop_data, []]
+        )  # [] for no matching item
         handler.db.create_or_update_one = Mock()
         handler.db.create_one = Mock()
 
@@ -117,7 +119,7 @@ class TestSfsMdReceiptHandlerGetOrCreate:
         purchase.item_id = None
         purchase.status = None
         sample_receipt.purchases = [purchase]
-        
+
         handler.db.read_many = Mock(
             side_effect=[
                 [{"id": str(shop_uuid)}],
@@ -137,7 +139,7 @@ class TestSfsMdReceiptHandlerGetOrCreate:
         purchase.name = "Nonexistent Item"
         purchase.item_id = None
         sample_receipt.purchases = [purchase]
-        
+
         handler.db.read_many = Mock(return_value=[])
         handler.db.create_or_update_one = Mock()
         handler.db.create_one = Mock()
@@ -146,14 +148,16 @@ class TestSfsMdReceiptHandlerGetOrCreate:
 
         assert result.purchases[0].item_id is None
 
-    def test_get_or_create_purchase_status_defaults_to_pending(self, handler, sample_receipt):
+    def test_get_or_create_purchase_status_defaults_to_pending(
+        self, handler, sample_receipt
+    ):
         shop_uuid = UUID("12345678-1234-5678-1234-567812345678")
         item_uuid = UUID("87654321-4321-8765-4321-876543210987")
         purchase = Mock()
         purchase.name = "Test Item"
         purchase.item_id = None
         sample_receipt.purchases = [purchase]
-        
+
         handler.db.read_many = Mock(
             side_effect=[
                 [{"id": str(shop_uuid)}],

@@ -8,7 +8,10 @@ from src.adapters.logger.appwrite import AppwriteLogger
 from src.adapters.logger.default import DefaultLogger
 from src.handlers.sfs_md.receipt import SfsMdReceiptHandler
 from src.handlers.user_identity import UserIdentityHandler
-from src.schemas.request_schemas import GetOrCreateUserByIdentityRequest, GetReceiptByUrlRequest
+from src.schemas.request_schemas import (
+    GetOrCreateUserByIdentityRequest,
+    GetReceiptByUrlRequest,
+)
 from src.schemas.response_schemas import Health
 from src.schemas.sfs_md.receipt import SfsMdReceipt
 
@@ -45,7 +48,9 @@ async def get_or_create_receipt(request: SfsMdReceipt, logger=Depends(get_logger
 
 
 @ReceiptRouter.post("/get-by-url", response_model=SfsMdReceipt)
-async def get_receipt_by_url(request: GetReceiptByUrlRequest, logger=Depends(get_logger)):
+async def get_receipt_by_url(
+    request: GetReceiptByUrlRequest, logger=Depends(get_logger)
+):
     logger.info(f"Receipt URL: {request.url}")
     handler = SfsMdReceiptHandler(logger)
     receipt = handler.get_by_url(request.url)

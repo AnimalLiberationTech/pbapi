@@ -21,7 +21,7 @@ class UserIdentityHandler:
         self.logger.info(f"Finding user identity: {_id} for provider: {provider}")
 
         self.db.use_table(TableName.USER_IDENTITY)
-        data = self.db.read_many({'id': _id, 'provider': provider}, limit=1)
+        data = self.db.read_many({"id": _id, "provider": provider}, limit=1)
 
         if not data:
             return None
@@ -38,13 +38,15 @@ class UserIdentityHandler:
         return self.db.create_one(data)
 
     def update(self, identity: UserIdentity) -> bool:
-        self.logger.info(f"Updating user identity: {identity.id} for provider: {identity.provider}")
+        self.logger.info(
+            f"Updating user identity: {identity.id} for provider: {identity.provider}"
+        )
 
         self.db.use_table(TableName.USER_IDENTITY)
         data = identity.model_dump(mode="json")
         _id = data.pop("id")
         provider = data.pop("provider")
-        return self.db.update_one_by({'id': _id, 'provider': provider}, data)
+        return self.db.update_one_by({"id": _id, "provider": provider}, data)
 
     def get_or_create_user_by_identity(
         self, _id: str, provider: str, email: Optional[EmailStr], name: str
