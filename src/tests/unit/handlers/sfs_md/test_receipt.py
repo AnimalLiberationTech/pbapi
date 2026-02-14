@@ -138,7 +138,7 @@ class TestSfsMdReceiptHandlerGetOrCreate:
         purchase = Mock(name="Nonexistent Item", item_id=None)
         sample_receipt.purchases = [purchase]
         
-        handler.db.read_many = Mock(side_effect=[[], []])
+        handler.db.read_many = Mock(return_value=[])
         handler.db.create_or_update_one = Mock()
         handler.db.create_one = Mock()
 
