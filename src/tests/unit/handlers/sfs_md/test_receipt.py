@@ -15,11 +15,6 @@ def mock_logger():
 
 
 @pytest.fixture
-def mock_db():
-    return Mock()
-
-
-@pytest.fixture
 def handler(mock_logger):
     with patch("src.handlers.sfs_md.receipt.init_db_session") as mock_init:
         mock_init.return_value = Mock()
