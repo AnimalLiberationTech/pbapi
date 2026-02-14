@@ -5,9 +5,8 @@ from pydantic import BaseModel, EmailStr
 from src.schemas.user_identity import IdentityProvider
 
 
-class ParseFromUrlRequest(BaseModel):
+class GetReceiptByUrlRequest(BaseModel):
     url: str
-    user_id: str
 
 
 class LinkShopRequest(BaseModel):
