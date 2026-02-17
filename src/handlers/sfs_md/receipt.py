@@ -39,12 +39,12 @@ class SfsMdReceiptHandler:
             limit=1,
         )
         if shops:
-            receipt.shop_id = UUID(shops[0]["id"])
+            receipt.shop_id = int(shops[0]["id"])
 
             for i, purchase in enumerate(receipt.purchases):
                 self.db.use_table(TableName.SHOP_ITEM)
                 items = self.db.read_many(
-                    {"name": purchase.name, "shop_id": str(receipt.shop_id)},
+                    {"name": purchase.name, "shop_id": receipt.shop_id},
                     limit=1,
                 )
                 if items:
