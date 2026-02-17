@@ -22,7 +22,7 @@ class SfsMdReceipt(Receipt):
     purchases: List[PurchasedItem]
     receipt_url: str
     receipt_canonical_url: str | None = None
-    shop_id: UUID | None = None
+    shop_id: int | None = None
 
     def model_post_init(self, __context) -> None:
         self.id = f"{CountryCode.MOLDOVA}_{self.cash_register_id}_{self.key}".lower()
