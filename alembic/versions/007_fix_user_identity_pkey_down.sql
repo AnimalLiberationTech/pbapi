@@ -1,4 +1,5 @@
 -- Revert user_identity table to use id as PRIMARY KEY
+-- CAUTION: THIS DOWN MIGRATION CAN FAIL!
 
 -- drop the composite PRIMARY KEY
 ALTER TABLE user_identity DROP CONSTRAINT user_identity_pkey;
