@@ -1,7 +1,4 @@
 from typing import Optional
-from uuid import UUID, uuid4
-
-from pydantic import Field
 
 from src.schemas.common import CountryCode
 from src.schemas.osm_data import OsmData

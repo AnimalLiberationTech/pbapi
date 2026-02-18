@@ -1,7 +1,8 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr
 
-
+from src.schemas.sfs_md.receipt import SfsMdReceipt
 from src.schemas.user_identity import IdentityProvider
 
 
@@ -10,9 +11,8 @@ class GetReceiptByUrlRequest(BaseModel):
 
 
 class LinkShopRequest(BaseModel):
-    url: str
-    user_id: str
-    receipt_id: str
+    shop_id: int
+    receipt: SfsMdReceipt
 
 
 class AddBarcodesRequest(BaseModel):

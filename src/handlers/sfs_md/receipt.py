@@ -12,9 +12,14 @@ class SfsMdReceiptHandler:
         self.logger = logger
         self.db: PostgreSQLAdapter = init_db_session(self.logger)
 
-    def get_by_url(self, url: str) -> SfsMdReceipt | None:
-        self.logger.info("receipt url: " + url)
+    def get_by_id(self, receipt_id: str) -> SfsMdReceipt | None:
+        self.db.use_table(TableName.RECEIPT)
+        receipt = self.db.read_one(receipt_id)
+        if receipt:
+            return SfsMdReceipt(**receipt)
+        return None
 
+    def get_by_url(self, url: str) -> SfsMdReceipt | None:
         self.db.use_table(TableName.RECEIPT_URL)
         receipt_url = self.db.read_one(make_hash(url))
 
@@ -68,4 +73,10 @@ class SfsMdReceiptHandler:
             self.db.create_one(receipt_url_canonical.model_dump(mode="json"))
 
         self.logger.info(receipt.model_dump())
+        return receipt
+
+    def add_shop_id(self, shop_id: int, receipt: SfsMdReceipt) -> SfsMdReceipt:
+        self.db.use_table(TableName.RECEIPT)
+        receipt.shop_id = shop_id
+        self.db.update_one(receipt.id, receipt.model_dump(mode="json"))
         return receipt
