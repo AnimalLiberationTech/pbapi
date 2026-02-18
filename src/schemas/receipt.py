@@ -21,4 +21,4 @@ class Receipt(SchemaBase):
     total_amount: float
     purchases: List[PurchasedItem]
     receipt_url: str
-    shop_id: UUID | None = None
+    shop_id: int | None = None

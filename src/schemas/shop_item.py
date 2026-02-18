@@ -12,7 +12,7 @@ from src.schemas.schema_base import SchemaBase
 # it has be decided how to handle this conflict
 class ShopItem(SchemaBase):
     id: Optional[UUID] = Field(default_factory=uuid4)
-    shop_id: UUID
+    shop_id: int
     name: str
     status: ItemBarcodeStatus
     barcode: str | None = None
