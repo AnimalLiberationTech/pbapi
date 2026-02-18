@@ -1,8 +1,7 @@
 import logging
 import time
-from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from starlette.requests import Request
 
 from src.adapters.logger.appwrite import AppwriteLogger
@@ -15,9 +14,10 @@ from src.schemas.request_schemas import (
     GetReceiptByUrlRequest,
     LinkShopRequest,
 )
-from src.schemas.response_schemas import Health
+from src.schemas.response_schemas import ApiResponse
 from src.schemas.sfs_md.receipt import SfsMdReceipt
 from src.schemas.shop import Shop
+from src.schemas.user import User
 
 HomeRouter = APIRouter(tags=["home"])
 HealthRouter = APIRouter(prefix="/health", tags=["health"])
@@ -34,32 +34,49 @@ def get_logger(request: Request) -> logging.Logger:
     return DefaultLogger(level=logging.DEBUG).log
 
 
-@UserRouter.post("/get-or-create-by-identity")
+@UserRouter.post("/get-or-create-by-identity", response_model=ApiResponse[User])
 async def get_or_create_user_by_identity(
     request: GetOrCreateUserByIdentityRequest, logger=Depends(get_logger)
 ):
     logger.info(f"User identity: {request.id} for provider: {request.provider}")
     handler = UserIdentityHandler(logger)
-    return handler.get_or_create_user_by_identity(
+    user = handler.get_or_create_user_by_identity(
         request.id, request.provider, request.email, request.name
+    )
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="User retrieved or created successfully",
+        data=user,
     )
 
 
-@ReceiptRouter.get("/get-by-id")
-async def get_receipt_by_id(request, logger=Depends(get_logger)):
-    logger.info(f"Receipt ID: {request.receipt_id}")
+@ReceiptRouter.get("/get-by-id", response_model=ApiResponse[SfsMdReceipt])
+async def get_receipt_by_id(receipt_id: str, logger=Depends(get_logger)):
+    logger.info(f"Receipt ID: {receipt_id}")
     handler = SfsMdReceiptHandler(logger)
-    return handler.get_by_id(request.receipt_id)
+    receipt = handler.get_by_id(receipt_id)
+    if not receipt:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Receipt retrieved successfully",
+        data=receipt,
+    )
 
 
-@ReceiptRouter.post("/get-or-create", response_model=SfsMdReceipt)
+@ReceiptRouter.post("/get-or-create", response_model=ApiResponse[SfsMdReceipt])
 async def get_or_create_receipt(request: SfsMdReceipt, logger=Depends(get_logger)):
     logger.info(f"Receipt URL: {request.receipt_url}")
     handler = SfsMdReceiptHandler(logger)
-    return handler.get_or_create(request)
+    receipt = handler.get_or_create(request)
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Receipt retrieved or created successfully",
+        data=receipt,
+    )
 
 
-@ReceiptRouter.post("/get-by-url", response_model=SfsMdReceipt)
+@ReceiptRouter.post("/get-by-url", response_model=ApiResponse[SfsMdReceipt])
 async def get_receipt_by_url(
     request: GetReceiptByUrlRequest, logger=Depends(get_logger)
 ):
@@ -68,40 +85,59 @@ async def get_receipt_by_url(
     receipt = handler.get_by_url(request.url)
     if not receipt:
         raise HTTPException(status_code=404, detail="Receipt not found")
-    return receipt
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Receipt retrieved successfully",
+        data=receipt,
+    )
 
 
-@ReceiptRouter.post("/add-shop-id")
-async def link_shop(request: LinkShopRequest, logger=Depends(get_logger)) -> HTTPStatus:
+@ReceiptRouter.post("/add-shop-id", response_model=ApiResponse[SfsMdReceipt])
+async def link_shop(request: LinkShopRequest, logger=Depends(get_logger)):
     handler = SfsMdReceiptHandler(logger)
     receipt = handler.add_shop_id(shop_id=request.shop_id, receipt=request.receipt)
     if not receipt:
         raise HTTPException(status_code=500, detail="Database error")
 
-    return HTTPStatus.OK
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Shop linked to receipt successfully",
+        data=receipt,
+    )
 
 
-@ShopRouter.post("/get-or-create", response_model=Shop)
+@ShopRouter.post("/get-or-create", response_model=ApiResponse[Shop])
 async def get_or_create_shop(request: Shop, logger=Depends(get_logger)):
     logger.info(f"Get or create shop request: {request}")
     handler = ShopHandler(logger)
-    return handler.get_or_create(request)
+    shop = handler.get_or_create(request)
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Shop retrieved or created successfully",
+        data=shop,
+    )
 
 
-@HomeRouter.get("/", response_model=Health)
+@HomeRouter.get("/", response_model=ApiResponse)
 async def home(logger=Depends(get_logger)):
     logger.info("Home endpoint called")
     return await health(logger)
 
 
-@HealthRouter.get("", response_model=Health)
+@HealthRouter.get("", response_model=ApiResponse)
 async def health(logger=Depends(get_logger)):
     logger.info("Health endpoint called")
-    return Health()
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Health check successful",
+    )
 
 
-@HealthRouter.get("/deep-ping", response_model=Health)
+@HealthRouter.get("/deep-ping", response_model=ApiResponse)
 async def deep_ping(logger=Depends(get_logger)):
     logger.info("Deep ping endpoint called")
     time.sleep(1)
-    return Health()
+    return ApiResponse(
+        status_code=status.HTTP_200_OK,
+        detail="Deep ping successful",
+    )

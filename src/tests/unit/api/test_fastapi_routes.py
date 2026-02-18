@@ -4,12 +4,13 @@ from unittest.mock import Mock, patch
 from uuid import UUID
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from starlette.requests import Request
 
 from src.adapters.rest import fastapi_routes
 from src.schemas.common import QuantityUnit
 from src.schemas.request_schemas import GetOrCreateUserByIdentityRequest
+from src.schemas.response_schemas import ApiResponse
 from src.schemas.user_identity import IdentityProvider
 from src.schemas.purchased_item import PurchasedItem
 from src.tests.unit import make_receipt
@@ -68,20 +69,23 @@ class TestUserRoutes:
             email="test@example.com",
             name="Test User",
         )
-        expected_response = {"id": "user_1"}
+        expected_user = {"id": "user_1"}
 
         with patch(
             "src.adapters.rest.fastapi_routes.UserIdentityHandler"
         ) as mock_handler:
             mock_handler.return_value.get_or_create_user_by_identity.return_value = (
-                expected_response
+                expected_user
             )
 
             result = run_async(
                 fastapi_routes.get_or_create_user_by_identity(request, logger=logger)
             )
 
-        assert result == expected_response
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
+        assert result.detail == "User retrieved or created successfully"
+        assert result.data == expected_user
         logger.info.assert_called_with("User identity: google_123 for provider: google")
         mock_handler.assert_called_once_with(logger)
         mock_handler.return_value.get_or_create_user_by_identity.assert_called_once_with(
@@ -123,18 +127,21 @@ class TestReceiptRoutes:
     def test_get_or_create_receipt_calls_handler(self):
         logger = Mock()
         request = make_receipt()
-        expected_response = {"id": "receipt_1"}
+        expected_receipt = {"id": "receipt_1"}
 
         with patch(
             "src.adapters.rest.fastapi_routes.SfsMdReceiptHandler"
         ) as mock_handler:
-            mock_handler.return_value.get_or_create.return_value = expected_response
+            mock_handler.return_value.get_or_create.return_value = expected_receipt
 
             result = run_async(
                 fastapi_routes.get_or_create_receipt(request, logger=logger)
             )
 
-        assert result == expected_response
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
+        assert result.detail == "Receipt retrieved or created successfully"
+        assert result.data == expected_receipt
         logger.info.assert_called_with("Receipt URL: https://example.com/receipt/42")
         mock_handler.assert_called_once_with(logger)
         mock_handler.return_value.get_or_create.assert_called_once_with(request)
@@ -163,7 +170,8 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert len(result.purchases) == 3
+        assert isinstance(result, ApiResponse)
+        assert len(result.data.purchases) == 3
         mock_handler.return_value.get_or_create.assert_called_once_with(receipt)
 
     def test_get_receipt_by_url_found(self):
@@ -183,7 +191,10 @@ class TestReceiptRoutes:
                 fastapi_routes.get_receipt_by_url(request, logger=logger)
             )
 
-        assert result == receipt
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
+        assert result.detail == "Receipt retrieved successfully"
+        assert result.data == receipt
         logger.info.assert_called_with(f"Receipt URL: {url}")
         mock_handler.return_value.get_by_url.assert_called_once_with(url)
 
@@ -225,7 +236,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_receipt_by_url(request, logger=logger)
             )
 
-        assert result.receipt_url == url
+        assert result.data.receipt_url == url
         mock_handler.return_value.get_by_url.assert_called_once_with(url)
 
     def test_get_or_create_receipt_handler_initialization(self):
@@ -274,10 +285,10 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(request, logger=logger)
             )
 
-        assert result.shop_id == request.shop_id
-        assert result.date == request.date
-        assert result.user_id == request.user_id
-        assert result.total_amount == request.total_amount
+        assert result.data.shop_id == request.shop_id
+        assert result.data.date == request.date
+        assert result.data.user_id == request.user_id
+        assert result.data.total_amount == request.total_amount
 
     # Edge case tests
     def test_get_receipt_by_url_long_url(self):
@@ -298,7 +309,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_receipt_by_url(request, logger=logger)
             )
 
-        assert result.receipt_url == long_url
+        assert result.data.receipt_url == long_url
         mock_handler.return_value.get_by_url.assert_called_once_with(long_url)
 
     def test_get_receipt_by_url_unicode_characters(self):
@@ -319,7 +330,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_receipt_by_url(request, logger=logger)
             )
 
-        assert result.receipt_url == url_with_unicode
+        assert result.data.receipt_url == url_with_unicode
 
     def test_get_or_create_receipt_zero_total_amount(self):
         logger = Mock()
@@ -335,7 +346,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert result.total_amount == 0.0
+        assert result.data.total_amount == 0.0
 
     def test_get_or_create_receipt_negative_total_amount(self):
         logger = Mock()
@@ -351,7 +362,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert result.total_amount == -10.50
+        assert result.data.total_amount == -10.50
 
     def test_get_or_create_receipt_very_large_amount(self):
         logger = Mock()
@@ -367,7 +378,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert result.total_amount == 999999.99
+        assert result.data.total_amount == 999999.99
 
     def test_get_or_create_receipt_with_single_purchase(self):
         logger = Mock()
@@ -387,8 +398,8 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert len(result.purchases) == 1
-        assert result.purchases[0].name == "Single Item"
+        assert len(result.data.purchases) == 1
+        assert result.data.purchases[0].name == "Single Item"
 
     def test_get_or_create_receipt_with_many_purchases(self):
         logger = Mock()
@@ -412,7 +423,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert len(result.purchases) == 100
+        assert len(result.data.purchases) == 100
 
     def test_get_receipt_by_url_handler_exception(self):
         logger = Mock()
@@ -474,7 +485,8 @@ class TestReceiptRoutes:
 
             # Verify the handler was instantiated with logger
             mock_handler.assert_called_once_with(logger)
-            assert result == receipt
+            assert isinstance(result, ApiResponse)
+            assert result.data == receipt
 
     def test_get_or_create_receipt_with_optional_shop_id_none(self):
         logger = Mock()
@@ -490,7 +502,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert result.shop_id is None
+        assert result.data.shop_id is None
 
     def test_get_or_create_receipt_with_optional_canonical_url_none(self):
         logger = Mock()
@@ -506,7 +518,7 @@ class TestReceiptRoutes:
                 fastapi_routes.get_or_create_receipt(receipt, logger=logger)
             )
 
-        assert result.receipt_canonical_url is None
+        assert result.data.receipt_canonical_url is None
 
     def test_get_receipt_by_url_logging_called(self):
         logger = Mock()
@@ -550,7 +562,9 @@ class TestHealthRoutes:
 
         result = run_async(fastapi_routes.health(logger=logger))
 
-        assert result.message == "Plant-Based API is healthy"
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
+        assert result.detail == "Health check successful"
         logger.info.assert_called_with("Health endpoint called")
 
     def test_home_calls_health(self):
@@ -558,7 +572,8 @@ class TestHealthRoutes:
 
         result = run_async(fastapi_routes.home(logger=logger))
 
-        assert result.message == "Plant-Based API is healthy"
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
         assert logger.info.call_count == 2
         logger.info.assert_any_call("Home endpoint called")
         logger.info.assert_any_call("Health endpoint called")
@@ -569,6 +584,8 @@ class TestHealthRoutes:
         with patch("src.adapters.rest.fastapi_routes.time.sleep") as mock_sleep:
             result = run_async(fastapi_routes.deep_ping(logger=logger))
 
-        assert result.message == "Plant-Based API is healthy"
+        assert isinstance(result, ApiResponse)
+        assert result.status_code == status.HTTP_200_OK
+        assert result.detail == "Deep ping successful"
         mock_sleep.assert_called_once_with(1)
         logger.info.assert_called_with("Deep ping endpoint called")
