@@ -17,7 +17,7 @@ class SentryLogger(DefaultLogger):
             send_default_pii=False,
             traces_sample_rate=0.1,
             enable_logs=False,
-            environment=os.environ.get("ENV_NAME", "prod"),
+            environment=os.environ.get("ENV_NAME", "unknown"),
             dsn=os.environ.get("SENTRY_DSN"),
             integrations=[
                 StarletteIntegration(),
