@@ -14,13 +14,13 @@ class ShopHandler:
         self.logger.info(shops)
         if shops:
             # for Plante schema backward compatibility
-            if not shops[0]["country_code"]:
+            if shops[0]["country_code"] is None:
                 shops[0]["country_code"] = shop.country_code
-            if not shops[0]["company_id"]:
+            if shops[0]["company_id"] is None:
                 shops[0]["company_id"] = shop.company_id
-            if not shops[0]["address"]:
+            if shops[0]["address"] is None:
                 shops[0]["address"] = shop.address
-            if not shops[0]["osm_data"]:
+            if shops[0]["osm_data"] is None:
                 shops[0]["osm_data"] = shop.osm_data
 
             return Shop(**shops[0])
