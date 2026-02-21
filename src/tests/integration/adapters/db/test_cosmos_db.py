@@ -21,12 +21,18 @@ class TestCosmosDBAdapter(TestCase):
         )
 
     def test_create_one(self):
-        created_receipt_id = self.session.create_one(LIN_RECEIPT.model_dump(mode="json"))
+        created_receipt_id = self.session.create_one(
+            LIN_RECEIPT.model_dump(mode="json")
+        )
         assert created_receipt_id == LIN_RECEIPT.id
 
     def test_read_one(self):
-        created_receipt_id = self.session.create_one(LIN_RECEIPT.model_dump(mode="json"))
-        receipt: dict = self.session.read_one(created_receipt_id, partition_key=USER_ID_1)
+        created_receipt_id = self.session.create_one(
+            LIN_RECEIPT.model_dump(mode="json")
+        )
+        receipt: dict = self.session.read_one(
+            created_receipt_id, partition_key=USER_ID_1
+        )
         assert receipt["_id"] == LIN_RECEIPT.id
         assert receipt["date"] == LIN_RECEIPT.date.isoformat()
         assert receipt["user_id"] == USER_ID_1
@@ -44,7 +50,9 @@ class TestCosmosDBAdapter(TestCase):
         created_receipt_id_1 = self.session.create_one(
             LIN_RECEIPT.model_dump(mode="json")
         )
-        created_receipt_id_2 = self.session.create_one(KL_RECEIPT.model_dump(mode="json"))
+        created_receipt_id_2 = self.session.create_one(
+            KL_RECEIPT.model_dump(mode="json")
+        )
         receipts = self.session.read_many(partition_key=USER_ID_1)
         assert len(receipts) == 2
         assert receipts[0]["id"] == created_receipt_id_1 == LIN_RECEIPT.id
@@ -52,7 +60,9 @@ class TestCosmosDBAdapter(TestCase):
 
     def test_read_many_where(self):
         self.session.create_one(LIN_RECEIPT.model_dump(mode="json"))
-        created_receipt_id_2 = self.session.create_one(KL_RECEIPT.model_dump(mode="json"))
+        created_receipt_id_2 = self.session.create_one(
+            KL_RECEIPT.model_dump(mode="json")
+        )
         receipts = self.session.read_many(
             {"company_id": KL_RECEIPT.company_id}, partition_key=USER_ID_1
         )
@@ -72,7 +82,9 @@ class TestCosmosDBAdapter(TestCase):
         created_receipt_id_1 = self.session.create_one(
             LIN_RECEIPT.model_dump(mode="json")
         )
-        created_receipt_id_2 = self.session.create_one(KL_RECEIPT.model_dump(mode="json"))
+        created_receipt_id_2 = self.session.create_one(
+            KL_RECEIPT.model_dump(mode="json")
+        )
         receipts = self.session.read_many(partition_key=USER_ID_1)
         assert len(receipts) == 2
         self.session.delete_one(created_receipt_id_1, partition_key=USER_ID_1)

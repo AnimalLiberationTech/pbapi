@@ -42,7 +42,7 @@ def sample_osm_data():
         key=123456,
         lat="47.0293446",
         lon="28.8638389",
-        display_name="Test Shop, Chisinau, Moldova"
+        display_name="Test Shop, Chisinau, Moldova",
     )
 
 
@@ -54,7 +54,7 @@ def sample_shop(sample_osm_data):
         company_id="5897403875",
         address="Test Address, Chisinau",
         osm_data=sample_osm_data,
-        creator_user_id=UUID("12345678-1234-5678-1234-567812345678")
+        creator_user_id=UUID("12345678-1234-5678-1234-567812345678"),
     )
 
 
@@ -71,7 +71,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": "Test Address, Chisinau",
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -80,7 +80,9 @@ class TestShopHandlerGetOrCreateExisting:
         assert result.id == 42
         assert result.osm_id == "1:123456"
         shop_handler.db.use_table.assert_called_with(TableName.SHOP)
-        shop_handler.db.read_many.assert_called_with({"osm_id": sample_shop.osm_id}, limit=1)
+        shop_handler.db.read_many.assert_called_with(
+            {"osm_id": sample_shop.osm_id}, limit=1
+        )
         shop_handler.db.create_one.assert_not_called()
 
     def test_get_existing_shop_with_null_country_code(self, shop_handler, sample_shop):
@@ -93,7 +95,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": None,
             "osm_data": None,
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -113,7 +115,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": "Test Address, Chisinau",
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -131,7 +133,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": None,
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -149,7 +151,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": "Test Address, Chisinau",
             "osm_data": None,
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -157,7 +159,9 @@ class TestShopHandlerGetOrCreateExisting:
 
         assert result.osm_data == sample_shop.osm_data
 
-    def test_get_existing_shop_logs_result(self, shop_handler, sample_shop, mock_logger):
+    def test_get_existing_shop_logs_result(
+        self, shop_handler, sample_shop, mock_logger
+    ):
         """Test that get_or_create logs the database result."""
         existing_shop_data = {
             "id": 42,
@@ -167,7 +171,7 @@ class TestShopHandlerGetOrCreateExisting:
             "address": "Test Address, Chisinau",
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -189,7 +193,9 @@ class TestShopHandlerGetOrCreateNew:
 
         assert result.id == 99
         shop_handler.db.use_table.assert_called_with(TableName.SHOP)
-        shop_handler.db.read_many.assert_called_with({"osm_id": sample_shop.osm_id}, limit=1)
+        shop_handler.db.read_many.assert_called_with(
+            {"osm_id": sample_shop.osm_id}, limit=1
+        )
         shop_handler.db.create_one.assert_called_once()
 
         # Verify that the shop data was passed to create_one
@@ -260,14 +266,14 @@ class TestShopHandlerEdgeCases:
             key=123456,
             lat="47.0293446",
             lon="28.8638389",
-            display_name="Test Shop"
+            display_name="Test Shop",
         )
         shop = Shop(
             country_code=CountryCode.MOLDOVA,
             company_id="5897403875",
             address="Test Address",
             osm_data=osm_data,
-            creator_user_id=UUID("12345678-1234-5678-1234-567812345678")
+            creator_user_id=UUID("12345678-1234-5678-1234-567812345678"),
         )
 
         shop_handler.db.read_many.return_value = []
@@ -285,14 +291,14 @@ class TestShopHandlerEdgeCases:
             key=789012,
             lat="47.0293446",
             lon="28.8638389",
-            display_name="Test Shop"
+            display_name="Test Shop",
         )
         shop = Shop(
             country_code=CountryCode.MOLDOVA,
             company_id="5897403875",
             address="Test Address",
             osm_data=osm_data,
-            creator_user_id=UUID("12345678-1234-5678-1234-567812345678")
+            creator_user_id=UUID("12345678-1234-5678-1234-567812345678"),
         )
 
         shop_handler.db.read_many.return_value = []
@@ -310,14 +316,14 @@ class TestShopHandlerEdgeCases:
             key=456789,
             lat="47.0293446",
             lon="28.8638389",
-            display_name="Test Shop"
+            display_name="Test Shop",
         )
         shop = Shop(
             country_code=CountryCode.MOLDOVA,
             company_id="5897403875",
             address="Test Address",
             osm_data=osm_data,
-            creator_user_id=UUID("12345678-1234-5678-1234-567812345678")
+            creator_user_id=UUID("12345678-1234-5678-1234-567812345678"),
         )
 
         shop_handler.db.read_many.return_value = []
@@ -348,7 +354,7 @@ class TestShopHandlerEdgeCases:
             "address": "Test Address, Chisinau",
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         second_shop = {
             "id": 99,
@@ -358,7 +364,7 @@ class TestShopHandlerEdgeCases:
             "address": "Test Address, Chisinau",
             "osm_data": sample_shop.osm_data.model_dump(mode="json"),
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [first_shop, second_shop]
 
@@ -400,7 +406,7 @@ class TestShopHandlerEdgeCases:
             "address": None,
             "osm_data": None,
             "creator_user_id": str(sample_shop.creator_user_id),
-            "creation_time": 1234567890
+            "creation_time": 1234567890,
         }
         shop_handler.db.read_many.return_value = [existing_shop_data]
 
@@ -419,7 +425,7 @@ class TestShopHandlerEdgeCases:
             key=123456,
             lat="47.0293446",
             lon="28.8638389",
-            display_name="Test Shop"
+            display_name="Test Shop",
         )
         shop = Shop(
             id=999,  # Preset ID
@@ -427,7 +433,7 @@ class TestShopHandlerEdgeCases:
             company_id="5897403875",
             address="Test Address",
             osm_data=osm_data,
-            creator_user_id=UUID("12345678-1234-5678-1234-567812345678")
+            creator_user_id=UUID("12345678-1234-5678-1234-567812345678"),
         )
 
         shop_handler.db.read_many.return_value = []
@@ -436,6 +442,3 @@ class TestShopHandlerEdgeCases:
         result = shop_handler.get_or_create(shop)
 
         assert result.id == 999
-
-
-
