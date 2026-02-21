@@ -575,7 +575,7 @@ class TestHealthRoutes:
         assert isinstance(result, ApiResponse)
         assert result.status_code == status.HTTP_200_OK
         assert logger.info.call_count == 2
-        logger.info.assert_any_call("Home endpoint called")
+        logger.info.assert_any_call("Plant-Based API home endpoint called")
         logger.info.assert_any_call("Health endpoint called")
 
     def test_deep_ping_sleeps_and_returns_health(self):
