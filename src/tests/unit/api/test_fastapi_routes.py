@@ -565,7 +565,7 @@ class TestHealthRoutes:
         assert isinstance(result, ApiResponse)
         assert result.status_code == status.HTTP_200_OK
         assert result.detail == "Plant-Based API health check successful"
-        logger.info.assert_called_with("Health endpoint called")
+        logger.info.assert_called_with("Plant-Based API health endpoint called")
 
     def test_home_calls_health(self):
         logger = Mock()
@@ -576,7 +576,7 @@ class TestHealthRoutes:
         assert result.status_code == status.HTTP_200_OK
         assert logger.info.call_count == 2
         logger.info.assert_any_call("Plant-Based API home endpoint called")
-        logger.info.assert_any_call("Health endpoint called")
+        logger.info.assert_any_call("Plant-Based API health endpoint called")
 
     def test_deep_ping_sleeps_and_returns_health(self):
         logger = Mock()
@@ -588,4 +588,4 @@ class TestHealthRoutes:
         assert result.status_code == status.HTTP_200_OK
         assert result.detail == "Plant-Based API deep ping successful"
         mock_sleep.assert_called_once_with(1)
-        logger.info.assert_called_with("Deep ping endpoint called")
+        logger.info.assert_called_with("Plant-Based API deep ping endpoint called")
