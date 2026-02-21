@@ -586,6 +586,6 @@ class TestHealthRoutes:
 
         assert isinstance(result, ApiResponse)
         assert result.status_code == status.HTTP_200_OK
-        assert result.detail == "Deep ping successful"
+        assert result.detail == "Plant-Based API deep ping successful"
         mock_sleep.assert_called_once_with(1)
         logger.info.assert_called_with("Deep ping endpoint called")
