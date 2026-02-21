@@ -22,4 +22,5 @@ class Shop(SchemaBase):
 
     # for Plante schema backward compatibility
     def model_post_init(self, __context) -> None:
-        self.osm_id = f"{osm_type_to_code(self.osm_data.type)}:{self.osm_data.key}"
+        if self.osm_id is None:
+            self.osm_id = f"{osm_type_to_code(self.osm_data.type)}:{self.osm_data.key}"
