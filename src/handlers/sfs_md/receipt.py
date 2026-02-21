@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from starlette.exceptions import HTTPException
+
 from src.adapters.db.postgresql import PostgreSQLAdapter, init_db_session
 from src.helpers.common import make_hash
 from src.schemas.common import TableName, ItemBarcodeStatus
@@ -12,9 +14,14 @@ class SfsMdReceiptHandler:
         self.logger = logger
         self.db: PostgreSQLAdapter = init_db_session(self.logger)
 
-    def get_by_url(self, url: str) -> SfsMdReceipt | None:
-        self.logger.info("receipt url: " + url)
+    def get_by_id(self, receipt_id: str) -> SfsMdReceipt | None:
+        self.db.use_table(TableName.RECEIPT)
+        receipt = self.db.read_one(receipt_id)
+        if receipt:
+            return SfsMdReceipt(**receipt)
+        return None
 
+    def get_by_url(self, url: str) -> SfsMdReceipt | None:
         self.db.use_table(TableName.RECEIPT_URL)
         receipt_url = self.db.read_one(make_hash(url))
 
@@ -68,4 +75,13 @@ class SfsMdReceiptHandler:
             self.db.create_one(receipt_url_canonical.model_dump(mode="json"))
 
         self.logger.info(receipt.model_dump())
+        return receipt
+
+    def add_shop_id(self, shop_id: int, receipt: SfsMdReceipt) -> SfsMdReceipt | None:
+        self.db.use_table(TableName.RECEIPT)
+        receipt.shop_id = shop_id
+        success = self.db.update_one(receipt.id, receipt.model_dump(mode="json"))
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to add shop to receipt")
+
         return receipt

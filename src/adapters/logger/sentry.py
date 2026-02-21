@@ -13,12 +13,11 @@ class SentryLogger(DefaultLogger):
     def __init__(self, level: int = logging.INFO):
         super().__init__(level)
 
-        # Sentry initialization
         init(
             send_default_pii=False,
             traces_sample_rate=0.1,
             enable_logs=False,
-            environment=os.environ.get("ENV_NAME", "dev"),
+            environment=os.environ.get("ENV_NAME", "unknown"),
             dsn=os.environ.get("SENTRY_DSN"),
             integrations=[
                 StarletteIntegration(),

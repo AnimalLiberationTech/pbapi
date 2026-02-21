@@ -24,6 +24,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "testcontainers[postgres]",
+    "pre-commit>=3.0.0",
 ]
 
 [tool.pylint.messages_control]
