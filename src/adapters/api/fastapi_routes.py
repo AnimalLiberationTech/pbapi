@@ -96,6 +96,7 @@ async def get_receipt_by_url(
 async def add_shop(request: AddShopRequest, logger=Depends(get_logger)):
     handler = SfsMdReceiptHandler(logger)
     receipt = handler.add_shop_id(shop_id=request.shop_id, receipt=request.receipt)
+
     return ApiResponse(
         status_code=status.HTTP_200_OK,
         detail="Shop linked to receipt successfully",

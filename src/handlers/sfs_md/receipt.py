@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from starlette.exceptions import HTTPException
+
 from src.adapters.db.postgresql import PostgreSQLAdapter, init_db_session
 from src.helpers.common import make_hash
 from src.schemas.common import TableName, ItemBarcodeStatus
@@ -75,8 +77,11 @@ class SfsMdReceiptHandler:
         self.logger.info(receipt.model_dump())
         return receipt
 
-    def add_shop_id(self, shop_id: int, receipt: SfsMdReceipt) -> SfsMdReceipt:
+    def add_shop_id(self, shop_id: int, receipt: SfsMdReceipt) -> SfsMdReceipt | None:
         self.db.use_table(TableName.RECEIPT)
         receipt.shop_id = shop_id
-        self.db.update_one(receipt.id, receipt.model_dump(mode="json"))
+        success = self.db.update_one(receipt.id, receipt.model_dump(mode="json"))
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to add shop to receipt")
+
         return receipt
