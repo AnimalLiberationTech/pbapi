@@ -10,7 +10,7 @@ class GetReceiptByUrlRequest(BaseModel):
     url: str
 
 
-class LinkShopRequest(BaseModel):
+class AddShopRequest(BaseModel):
     shop_id: int
     receipt: SfsMdReceipt
 

@@ -4,6 +4,8 @@ from itertools import groupby
 
 import requests
 
+from src.schemas.common import OsmType, OsmTypeCode
+
 
 def get_templates_dir() -> str:
     return os.path.join("src", "static", "templates")
@@ -97,3 +99,9 @@ def is_localhost() -> bool:
 
 def make_hash(url: str) -> str:
     return hashlib.md5(url.strip().encode("utf-8")).hexdigest()
+
+
+def osm_type_to_code(osm_type: OsmType | str) -> OsmTypeCode:
+    if not isinstance(osm_type, OsmType):
+        osm_type = OsmType(osm_type)
+    return OsmTypeCode[osm_type.name]

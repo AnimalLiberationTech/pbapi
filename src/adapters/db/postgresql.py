@@ -1,5 +1,4 @@
 import os
-import uuid
 from typing import Any, Dict, List, Self
 
 from psycopg2 import connect
@@ -34,7 +33,15 @@ TABLE_COLUMNS = {
         "item_id",
     ],
     TableName.SHOP_ITEM: ["shop_id", "name", "status", "barcode"],
-    TableName.SHOP: ["country_code", "company_id", "address", "osm_data"],
+    TableName.SHOP: [
+        "country_code",
+        "company_id",
+        "address",
+        "osm_id",
+        "osm_data",
+        "creation_time",
+        "creator_user_id",
+    ],
     TableName.USER: [
         "email",
         "name",
@@ -54,7 +61,6 @@ TABLE_COLUMNS = {
 # Tables that have the 'data' JSONB column for extra fields
 TABLES_WITH_DATA_COLUMN = {
     TableName.RECEIPT,
-    TableName.SHOP,
     TableName.USER,
 }
 
@@ -91,9 +97,15 @@ class PostgreSQLAdapter(BaseDBAdapter):
 
     def _build_insert_data(self, data: Dict[str, Any]) -> tuple:
         """Build column names, placeholders, and values for INSERT."""
-        columns = ["id"]
-        values = [data.get("id")]
-        placeholders = ["%s"]
+        columns = []
+        values = []
+        placeholders = []
+
+        # Only include id if it's not None
+        if data.get("id") is not None:
+            columns.append("id")
+            values.append(data.get("id"))
+            placeholders.append("%s")
 
         table_columns = self._get_table_columns()
         extra_data = {}
@@ -125,11 +137,6 @@ class PostgreSQLAdapter(BaseDBAdapter):
         if not self.current_table:
             raise ValueError("Table not selected. Use use_table() first.")
 
-        _id = data.get("id")
-        if not _id:
-            _id = str(uuid.uuid4())
-            data["id"] = _id
-
         columns, placeholders, values = self._build_insert_data(data)
 
         with self.connection.cursor() as cursor:
@@ -140,7 +147,7 @@ class PostgreSQLAdapter(BaseDBAdapter):
             )
             cursor.execute(query, values)
             result = cursor.fetchone()
-            return result[0] if result else _id
+            return result[0] if result else data.get("id")
 
     def create_or_update_one(self, data: Dict[str, Any]) -> bool:
         if not self.current_table:

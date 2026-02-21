@@ -10,17 +10,22 @@ class ShopHandler:
 
     def get_or_create(self, shop: Shop) -> Shop:
         self.db.use_table(TableName.SHOP)
-        shops = self.db.read_many(
-            {
-                "country_code": shop.country_code,
-                "company_id": shop.company_id,
-                "shop_address": shop.shop_address,
-            },
-            limit=1,
-        )
+        shops = self.db.read_many({"osm_id": shop.osm_id}, limit=1)
+        self.logger.info(shops)
         if shops:
+            # for Plante schema backward compatibility
+            if not shops[0]["country_code"]:
+                shops[0]["country_code"] = shop.country_code
+            if not shops[0]["company_id"]:
+                shops[0]["company_id"] = shop.company_id
+            if not shops[0]["address"]:
+                shops[0]["address"] = shop.address
+            if not shops[0]["osm_data"]:
+                shops[0]["osm_data"] = shop.osm_data
+
             return Shop(**shops[0])
 
         shop_id = self.db.create_one(shop.model_dump(mode="json"))
+        self.logger.info(shop_id)
         shop.id = int(shop_id)
         return shop

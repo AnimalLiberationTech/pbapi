@@ -33,7 +33,7 @@ A FastAPI-based backend for the Plant-Based project, providing search and vendor
 
 2. Run the application:
    ```shell
-   uv run uvicorn src.adapters.rest.fastapi_app:app --reload
+   uv run uvicorn src.adapters.api.fastapi_app:app --reload
    ```
 
 The API will be available at `http://127.0.0.1:8000`.

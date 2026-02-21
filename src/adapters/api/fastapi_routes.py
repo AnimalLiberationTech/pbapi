@@ -12,7 +12,7 @@ from src.handlers.user_identity import UserIdentityHandler
 from src.schemas.request_schemas import (
     GetOrCreateUserByIdentityRequest,
     GetReceiptByUrlRequest,
-    LinkShopRequest,
+    AddShopRequest,
 )
 from src.schemas.response_schemas import ApiResponse
 from src.schemas.sfs_md.receipt import SfsMdReceipt
@@ -93,11 +93,11 @@ async def get_receipt_by_url(
 
 
 @ReceiptRouter.post("/add-shop-id", response_model=ApiResponse[SfsMdReceipt])
-async def link_shop(request: LinkShopRequest, logger=Depends(get_logger)):
+async def add_shop(request: AddShopRequest, logger=Depends(get_logger)):
     handler = SfsMdReceiptHandler(logger)
     receipt = handler.add_shop_id(shop_id=request.shop_id, receipt=request.receipt)
     if not receipt:
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Error calling pbapi")
 
     return ApiResponse(
         status_code=status.HTTP_200_OK,
@@ -120,24 +120,24 @@ async def get_or_create_shop(request: Shop, logger=Depends(get_logger)):
 
 @HomeRouter.get("/", response_model=ApiResponse)
 async def home(logger=Depends(get_logger)):
-    logger.info("Home endpoint called")
+    logger.info("Plant-Based API home endpoint called")
     return await health(logger)
 
 
 @HealthRouter.get("", response_model=ApiResponse)
 async def health(logger=Depends(get_logger)):
-    logger.info("Health endpoint called")
+    logger.info("Plant-Based API health endpoint called")
     return ApiResponse(
         status_code=status.HTTP_200_OK,
-        detail="Health check successful",
+        detail="Plant-Based API health check successful",
     )
 
 
 @HealthRouter.get("/deep-ping", response_model=ApiResponse)
 async def deep_ping(logger=Depends(get_logger)):
-    logger.info("Deep ping endpoint called")
+    logger.info("Plant-Based API deep ping endpoint called")
     time.sleep(1)
     return ApiResponse(
         status_code=status.HTTP_200_OK,
-        detail="Deep ping successful",
+        detail="Plant-Based API deep ping successful",
     )
