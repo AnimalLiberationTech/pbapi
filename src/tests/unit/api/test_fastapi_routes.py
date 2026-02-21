@@ -564,7 +564,7 @@ class TestHealthRoutes:
 
         assert isinstance(result, ApiResponse)
         assert result.status_code == status.HTTP_200_OK
-        assert result.detail == "Health check successful"
+        assert result.detail == "Plant-Based API health check successful"
         logger.info.assert_called_with("Health endpoint called")
 
     def test_home_calls_health(self):
