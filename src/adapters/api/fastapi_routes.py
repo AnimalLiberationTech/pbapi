@@ -97,7 +97,7 @@ async def add_shop(request: AddShopRequest, logger=Depends(get_logger)):
     handler = SfsMdReceiptHandler(logger)
     receipt = handler.add_shop_id(shop_id=request.shop_id, receipt=request.receipt)
     if not receipt:
-        raise HTTPException(status_code=500, detail="Error calling pbapi")
+        raise HTTPException(status_code=500, detail="Failed to add shop to receipt")
 
     return ApiResponse(
         status_code=status.HTTP_200_OK,
